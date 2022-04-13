@@ -6,7 +6,6 @@ const signInFacebook = () => {
     return async (dispatch) => {
         try {
             const user = await signInWithFacebook();
-            console.log(user);
             dispatch(login(user));
             window.location = '/home'
         } catch (err) {

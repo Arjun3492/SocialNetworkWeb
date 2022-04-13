@@ -1,16 +1,17 @@
 import firebase, { db, storage } from './firebase.config';
 import { getCurrentUser } from './firebaseAuth';
 import randomstring from 'randomstring';
+import { postDecrement, postIncrement } from './updateUser';
 
 const storageRef = storage.ref();
-const uploadPost = async (title, file, filename) => {
+const uploadPost = async (title, file) => {
     try {
         const user = await getCurrentUser();
-        const docRef = db.collection("post").doc(user.id);
+        const docRef = db.collection("post").doc(user.uid);
         const postId = randomstring.generate();
         var postData;
         if (file) {
-            const imageRef = await uploadFile(file, user.id);
+            const imageRef = await uploadFile(file);
             const imageUrl = await imageRef.getDownloadURL();
             postData = {
                 title: title,
@@ -18,7 +19,7 @@ const uploadPost = async (title, file, filename) => {
                 userId: user.uid,
                 userName: user.displayName,
                 imageUrl: imageUrl,
-                fileName: filename,
+                fileName: file.name,
             }
         } else {
             postData = {
@@ -29,6 +30,7 @@ const uploadPost = async (title, file, filename) => {
             }
         }
         await docRef.set(postData);
+        await postIncrement(user.uid);
         return true;
     }
     catch (err) {
@@ -39,24 +41,28 @@ const uploadPost = async (title, file, filename) => {
 
 const deletePost = async (postId) => {
     try {
+        const user = await getCurrentUser();
         //  await db.collection("post").where("postId", "==", postId).delete();
         const querySnapshot = await db.collection("post").where("postId", "==", postId).get();
-        querySnapshot.forEach(async doc => {
-            if (doc.data().imageUrl) {
-                await deleteFile(doc.data().fileName);
-            }
-            await doc.ref.delete();
+        if (user.uid === querySnapshot.docs[0].data().userId) {
+
+            querySnapshot.forEach(async doc => {
+                if (doc.data().imageUrl)
+                    await deleteFile(doc.data().fileName);
+                await doc.ref.delete();
+            });
+            await postDecrement(user.uid);
             return true;
-        });
+        }
     }
     catch (err) {
         throw new Error(err.message);
     }
 }
 
-const uploadFile = async (file, filename) => {
+const uploadFile = async (file) => {
     try {
-        var imageRef = storageRef.child(`images/${filename}.jpg`);
+        var imageRef = storageRef.child(`images/${file.name}.jpg`);
         await imageRef.put(file);
         return imageRef;
 

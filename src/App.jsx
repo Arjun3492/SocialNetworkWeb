@@ -6,13 +6,15 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Navigate } from 'react-router-dom'
 import { useEffect, useState } from 'react';
 import { getCurrentUser } from './core/helpers/firebaseAuth';
+import Profile from './pages/profile/profile';
 
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   useEffect(() => {
     getCurrentUser().then((user) =>
-      user && setIsLoggedIn(true)
+      user &&
+      setIsLoggedIn(true)
     );
   }, []);
   return (
@@ -22,6 +24,7 @@ function App() {
           <Route exact path="/" element={<Navigate to="/home" />} />
           <Route path="/home" element={isLoggedIn ? <Home /> : <Navigate to="/login" />} />
           <Route path="/login" element={isLoggedIn ? <Navigate to="/home" /> : <Login />} />
+          <Route path="/profile" element={isLoggedIn ? <Profile /> : <Navigate to="/login" />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </div>

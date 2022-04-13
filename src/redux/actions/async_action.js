@@ -25,4 +25,25 @@ const logout = () => {
         type: 'logout', payload: {}
     }
 }
+const followUser = (userID) => {
+    return {
+        type: 'followUser'
+    }
+}
+const unfollowUser = (userID) => {
+    return {
+        type: 'unfollowUser'
+    }
+}
+
+const uploadPost = () => {
+    return {
+        type: 'uploadPost'
+    }
+}
+const deletePost = () => {
+    return {
+        type: 'deletePost'
+    }
+}
 export { loading, success, error, login, logout }

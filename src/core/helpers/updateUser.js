@@ -35,11 +35,10 @@ const unfollowUser = async (userId) => {
     }
 }
 
-const postIncrement = async () => {
+const postIncrement = async (userId) => {
     try {
-        const user = await getCurrentUser();
         const currentUserRef = await db
-            .collection("users").doc(user.uid);
+            .collection("users").doc(userId);
         await currentUserRef.update({
             posts: firebase.firestore.FieldValue.increment(1)
         });
@@ -50,11 +49,10 @@ const postIncrement = async () => {
     }
 }
 
-const postDecrement = async () => {
+const postDecrement = async (userId) => {
     try {
-        const user = await getCurrentUser();
         const currentUserRef = await db
-            .collection("users").doc(user.uid);
+            .collection("users").doc(userId);
         await currentUserRef.update({
             posts: firebase.firestore.FieldValue.increment(-1)
         });
@@ -64,5 +62,4 @@ const postDecrement = async () => {
         throw new Error(err.message);
     }
 }
-
 export { followUser, unfollowUser, postIncrement, postDecrement };
