@@ -78,9 +78,65 @@ const deleteFile = async (filename) => {
 
 
 const likePost = async (postId) => {
-    try { }
+    try {
+        const user = await getCurrentUser();
+        const querySnapshot = await db.collection("post").where("postId", "==", postId).get();
+        querySnapshot.forEach(async doc => {
+            if (!doc.data().likes.includes(user.uid))
+                await doc.ref.update({
+                    likes: firebase.firestore.FieldValue.arrayUnion(user.uid)
+                });
+            else
+                await doc.ref.update({
+                    likes: firebase.firestore.FieldValue.arrayRemove(user.uid)
+                });
+        });
+        return true;
+    }
     catch (err) {
         throw new Error(err.message);
     }
 }
-export { uploadPost, deletePost, uploadFile, deleteFile };
+
+const addComment = async (comment, postId) => {
+    try {
+        const user = await getCurrentUser();
+        const commentId = randomstring.generate();
+        const commentData = {
+            comment: comment,
+            commentedBy: user.displayName,
+            commentId: commentId,
+            commentedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }
+        const querySnapshot = await db.collection("post").where("postId", "==", postId).get();
+        querySnapshot.forEach(async doc => {
+            await doc.ref.update({
+                comments: firebase.firestore.FieldValue.arrayUnion(commentData)
+            });
+        });
+        return true;
+    }
+    catch (err) {
+        throw new Error(err.message);
+    }
+}
+
+const deleteComment = async (commentId, postId) => {
+    try {
+        const user = await getCurrentUser();
+        const querySnapshot = await db.collection("post").where("postId", "==", postId).get();
+        querySnapshot.forEach(async doc => {
+            if (doc.data().userId === user.uid || doc.data().comments.find(x => x.commentedBy === user.displayName)) {
+                const updatedCommentArray = doc.data().comments.filter(comment => comment.commentId !== commentId)
+                await doc.ref.update({
+                    comments: updatedCommentArray
+                });
+            }
+        });
+        return true;
+    }
+    catch (err) {
+        throw new Error(err.message);
+    }
+}
+export { uploadPost, deletePost, uploadFile, deleteFile, likePost, addComment, deleteComment };
