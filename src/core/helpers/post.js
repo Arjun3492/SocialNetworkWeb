@@ -126,7 +126,7 @@ const deleteComment = async (commentId, postId) => {
         const user = await getCurrentUser();
         const querySnapshot = await db.collection("post").where("postId", "==", postId).get();
         querySnapshot.forEach(async doc => {
-            if (doc.data().userId === user.uid || doc.data().comments.find(x => x.commentedBy === user.displayName)) {
+            if (doc.data().userId === user.uid || doc.data().comments.find(comment => comment.commentedBy === user.displayName)) {
                 const updatedCommentArray = doc.data().comments.filter(comment => comment.commentId !== commentId)
                 await doc.ref.update({
                     comments: updatedCommentArray
