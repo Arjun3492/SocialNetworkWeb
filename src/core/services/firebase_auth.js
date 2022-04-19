@@ -1,5 +1,6 @@
 // import { Subject } from 'rxjs';
-import firebase, { auth, db } from './firebase.config';
+
+import firebase, { auth, db } from "../firebase_config";
 
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 const facebookProvider = new firebase.auth.FacebookAuthProvider();
@@ -30,14 +31,16 @@ const signInWithGoogle = async () => {
                 name: user.displayName,
                 authProvider: "google",
                 email: user.email,
-                photoUrl: user.photoURL
+                photoURL: user.photoURL,
+                following: [],
+                followers: [],
+                posts: 0
             });
         }
-        await localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('user', JSON.stringify(user));
         return user;
     } catch (err) {
         throw new Error(err.message)
-
     }
 };
 
@@ -55,11 +58,13 @@ const signInWithFacebook = async () => {
                 name: user.displayName,
                 authProvider: "facebook",
                 email: user.email,
-                photoUrl: user.photoURL
+                photoURL: user.photoURL,
+                following: [],
+                followers: [],
+                posts: 0
             });
         }
-        await localStorage.setItem('user', JSON.stringify(user));
-
+        localStorage.setItem('user', JSON.stringify(user));
         return user;
 
     } catch (err) {
@@ -86,7 +91,7 @@ const getCurrentUser = async () => {
         var user = await JSON.parse(localStorage.getItem('user'));
         if (user)
             return user;
-        const userCredential = await auth.currentUser
+        const userCredential = auth.currentUser
         if (userCredential)
             user = userCredential.user;
         return user;

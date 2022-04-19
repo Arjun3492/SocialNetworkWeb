@@ -2,7 +2,7 @@ import logo from '../../assets/logo/The_social_network.png'
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebookF } from "react-icons/fa";
 import { useDispatch } from 'react-redux'
-import { signInGoogle, signInFacebook } from '../../redux/actions/user_auth_actions';
+import { signInGoogle, signInFacebook } from '../../redux/actions/user_actions';
 
 
 const Login = () => {

@@ -1,49 +1,38 @@
 //ACTIONS FOR HANDLING ASYNC CALLS
 
-const loading = () => {
+const LOADING = () => {
     return {
-        type: 'loading'
+        type: 'LOADING'
     }
 }
-const success = (data) => {
+const SUCCESS = (data) => {
     return {
-        type: 'success', payload: data
+        type: 'SUCCESS', payload: data
     }
 }
-const error = (err) => {
+const ERROR = (err) => {
     return {
-        type: 'error', payload: err
+        type: 'ERROR', payload: err
     }
 }
-const login = (user) => {
+const LOGIN_USER = (user) => {
     return {
-        type: 'login', payload: user
+        type: 'LOGIN_USER', payload: user
     }
 }
-const logout = () => {
+const LOGOUT_USER = () => {
     return {
-        type: 'logout', payload: {}
+        type: 'LOGOUT_USER', payload: {}
     }
 }
-const followUser = (userID) => {
+const FOLLOW_USER = (user) => {
     return {
-        type: 'followUser'
+        type: 'FOLLOW_USER', payload: user
     }
 }
-const unfollowUser = (userID) => {
+const UNFOLLOW_USER = (user) => {
     return {
-        type: 'unfollowUser'
+        type: 'UNFOLLOW_USER', payload: user
     }
 }
-
-const uploadPost = () => {
-    return {
-        type: 'uploadPost'
-    }
-}
-const deletePost = () => {
-    return {
-        type: 'deletePost'
-    }
-}
-export { loading, success, error, login, logout }
+export { LOADING, SUCCESS, ERROR, LOGIN_USER, LOGOUT_USER, FOLLOW_USER, UNFOLLOW_USER }

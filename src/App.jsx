@@ -5,8 +5,8 @@ import Login from './pages/Login/login';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Navigate } from 'react-router-dom'
 import { useEffect, useState } from 'react';
-import { getCurrentUser } from './core/helpers/firebaseAuth';
-import Profile from './pages/profile/profile';
+import Profile from './pages/Profile/profile';
+import { getCurrentUser } from './core/services/firebase_auth';
 
 
 function App() {
@@ -24,7 +24,7 @@ function App() {
           <Route exact path="/" element={<Navigate to="/home" />} />
           <Route path="/home" element={isLoggedIn ? <Home /> : <Navigate to="/login" />} />
           <Route path="/login" element={isLoggedIn ? <Navigate to="/home" /> : <Login />} />
-          <Route path="/profile" element={isLoggedIn ? <Profile /> : <Navigate to="/login" />} />
+          <Route path="/profile/:id" element={isLoggedIn ? <Profile /> : <Navigate to="/login" />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </div>

@@ -1,14 +1,14 @@
-import firebase, { db, storage } from './firebase.config';
-import { getCurrentUser } from './firebaseAuth';
-import randomstring from 'randomstring';
-import { postDecrement, postIncrement } from './updateUser';
+import { getCurrentUser } from './firebase_auth';
+import { postDecrement, postIncrement } from './user';
+import firebase, { db, storage } from '../firebase_config';
+import uniqid from 'uniqid';
 
 const storageRef = storage.ref();
 const uploadPost = async (title, file) => {
     try {
         const user = await getCurrentUser();
-        const docRef = db.collection("post").doc(user.uid);
-        const postId = randomstring.generate();
+        const colRef = db.collection("post");
+        const postId = uniqid();
         var postData;
         if (file) {
             const imageRef = await uploadFile(file);
@@ -20,6 +20,7 @@ const uploadPost = async (title, file) => {
                 userName: user.displayName,
                 imageUrl: imageUrl,
                 fileName: file.name,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             }
         } else {
             postData = {
@@ -27,9 +28,10 @@ const uploadPost = async (title, file) => {
                 postId: postId,
                 userId: user.uid,
                 userName: user.displayName,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             }
         }
-        await docRef.set(postData);
+        await colRef.add(postData);
         await postIncrement(user.uid);
         return true;
     }
@@ -38,6 +40,35 @@ const uploadPost = async (title, file) => {
     }
 }
 
+const getUserPosts = async (userId) => {
+    try {
+        const querySnapshot = await db.collection("post").where("userId", "==", userId).get();
+        return querySnapshot.docs.map(doc => {
+            return {
+                ...doc.data(),
+                id: doc.id
+            }
+        });
+    } catch (err) {
+        throw new Error(err.message);
+    }
+}
+
+const getRecentPosts = async () => {
+    try {
+        return new Promise((res, rej) => {
+            db.collection("post").orderBy("createdAt", "desc").limit(10).onSnapshot((snapshot) => {
+                let updatedData = snapshot.docs.map(doc => doc.data())
+                res(updatedData);
+            })
+        })
+    } catch (err) {
+        throw new Error(err.message);
+    }
+}
+
+
+
 
 const deletePost = async (postId) => {
     try {
@@ -45,7 +76,6 @@ const deletePost = async (postId) => {
         //  await db.collection("post").where("postId", "==", postId).delete();
         const querySnapshot = await db.collection("post").where("postId", "==", postId).get();
         if (user.uid === querySnapshot.docs[0].data().userId) {
-
             querySnapshot.forEach(async doc => {
                 if (doc.data().imageUrl)
                     await deleteFile(doc.data().fileName);
@@ -62,8 +92,10 @@ const deletePost = async (postId) => {
 
 const uploadFile = async (file) => {
     try {
-        var imageRef = storageRef.child(`images/${file.name}.jpg`);
-        await imageRef.put(file);
+        const imageRef = storageRef.child(`images/${file.name}`);
+        await imageRef.put(file).then((snapshot) => {
+            alert("SUCCESSFULLY UPLOADED POST IMAGE");
+        });
         return imageRef;
 
     } catch (err) {
@@ -73,7 +105,7 @@ const uploadFile = async (file) => {
 
 const deleteFile = async (filename) => {
     try {
-        var imageRef = storageRef.child(`images/${filename}.jpg`);
+        const imageRef = storageRef.child(`images/${filename}`);
         await imageRef.delete();
         return true;
 
@@ -107,7 +139,9 @@ const likePost = async (postId) => {
 const addComment = async (comment, postId) => {
     try {
         const user = await getCurrentUser();
-        const commentId = randomstring.generate();
+        const commentId = uniqid();
+        ;
+
         const commentData = {
             comment: comment,
             commentedBy: user.displayName,
@@ -145,4 +179,4 @@ const deleteComment = async (commentId, postId) => {
         throw new Error(err.message);
     }
 }
-export { uploadPost, deletePost, uploadFile, deleteFile, likePost, addComment, deleteComment };
+export { uploadPost, deletePost, uploadFile, deleteFile, likePost, addComment, deleteComment, getUserPosts, getRecentPosts };
